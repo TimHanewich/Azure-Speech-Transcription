@@ -44,48 +44,12 @@ namespace AzureSpeechTranscription
                 string content = System.IO.File.ReadAllText(path);
                 JObject jo = JObject.Parse(content);
 
-                //Get recognized phrases
-                JToken? recognizedPhrasesToken = jo.SelectToken("recognizedPhrases");
-                if (recognizedPhrasesToken == null)
-                {
-                    Console.WriteLine("Unable to find recognizedPhrases!");
-                    return;
-                }
-                JArray recognizedPhrases = (JArray)recognizedPhrasesToken;
-
-                //Loop through all
-                List<Spoken> ToReturn = new List<Spoken>();
-                foreach (JObject spokenJSON in recognizedPhrases)
-                {
-                    Spoken ThisOne = new Spoken();
-
-                    //Get speaker
-                    JProperty? prop_speaker = spokenJSON.Property("speaker");
-                    if (prop_speaker != null)
-                    {
-                        ThisOne.Speaker = Convert.ToInt32(prop_speaker.Value.ToString());
-                    }
-
-                    //get display
-                    JToken? display = spokenJSON.SelectToken("nBest[0].display");
-                    if (display != null)
-                    {
-                        ThisOne.Display = display.ToString();
-                    }
-
-                    //Get confidence
-                    JToken? confidence = spokenJSON.SelectToken("nBest[0].confidence");
-                    if (confidence != null)
-                    {
-                        ThisOne.Confidence = Convert.ToSingle(confidence.ToString());
-                    }
-
-                    ToReturn.Add(ThisOne);
-                }
+                //Conver to Spokens
+                Spoken[] spokens = TranscriptionToSpokens(jo);
 
                 //Write into the file now
                 string ToWrite = "";
-                foreach (Spoken s in ToReturn)
+                foreach (Spoken s in spokens)
                 {
 
                     //Determine line
@@ -111,10 +75,55 @@ namespace AzureSpeechTranscription
                 //Write it!
                 System.IO.File.WriteAllText(outputPath, ToWrite);
             }
+            else
+            {
+                Console.WriteLine("Not sure how to handle that one yet!");
+            }
+        }
 
+        public static Spoken[] TranscriptionToSpokens(JObject transcription)
+        {
+            //Get recognized phrases
+            JToken? recognizedPhrasesToken = transcription.SelectToken("recognizedPhrases");
+            if (recognizedPhrasesToken == null)
+            {
+                throw new Exception("Unable to find recognizedPhrases in transcription!");
 
-            
+            }
+            JArray recognizedPhrases = (JArray)recognizedPhrasesToken;
 
+            //Loop through all
+            List<Spoken> ToReturn = new List<Spoken>();
+            foreach (JObject spokenJSON in recognizedPhrases)
+            {
+                Spoken ThisOne = new Spoken();
+
+                //Get speaker
+                JProperty? prop_speaker = spokenJSON.Property("speaker");
+                if (prop_speaker != null)
+                {
+                    ThisOne.Speaker = Convert.ToInt32(prop_speaker.Value.ToString());
+                }
+
+                //get display
+                JToken? display = spokenJSON.SelectToken("nBest[0].display");
+                if (display != null)
+                {
+                    ThisOne.Display = display.ToString();
+                }
+
+                //Get confidence
+                JToken? confidence = spokenJSON.SelectToken("nBest[0].confidence");
+                if (confidence != null)
+                {
+                    ThisOne.Confidence = Convert.ToSingle(confidence.ToString());
+                }
+
+                ToReturn.Add(ThisOne);
+            }
+
+            //Return!
+            return ToReturn.ToArray();
         }
 
     }
