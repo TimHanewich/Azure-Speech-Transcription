@@ -25,5 +25,30 @@ namespace AzureSpeechTranscription
                 return OffsetMilliseconds / 1000.0f;
             }
         }
+
+        public string FriendlyOffset
+        {
+            get
+            {
+                // Convert the float to a TimeSpan object
+                TimeSpan t = TimeSpan.FromSeconds(OffsetSeconds);
+                
+                List<string> parts = new List<string>();
+
+                // Check each unit and add to the list if it's greater than zero
+                if (t.Hours > 0)
+                    parts.Add($"{t.Hours} {(t.Hours == 1 ? "hour" : "hours")}");
+
+                if (t.Minutes > 0)
+                    parts.Add($"{t.Minutes} {(t.Minutes == 1 ? "minute" : "minutes")}");
+
+                // We usually show seconds even if they are 0, unless there are hours/mins
+                // But based on your requirements, we'll add them if they exist or if the string is empty
+                if (t.Seconds > 0 || parts.Count == 0)
+                    parts.Add($"{t.Seconds} {(t.Seconds == 1 ? "second" : "seconds")}");
+
+                return string.Join(" ", parts);
+            }
+        }
     }
 }
