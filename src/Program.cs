@@ -40,6 +40,10 @@ namespace AzureSpeechTranscription
                     Console.WriteLine("Path '" + outputPath + "' is not a valid file.");
                 }
 
+                //Remove quotes
+                path = path.Replace("\"", "");
+                outputPath = outputPath.Replace("\"", "");
+
                 //Unpack it
                 string content = System.IO.File.ReadAllText(path);
                 JObject jo = JObject.Parse(content);
