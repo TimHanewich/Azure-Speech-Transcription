@@ -119,6 +119,13 @@ namespace AzureSpeechTranscription
                     ThisOne.Confidence = Convert.ToSingle(confidence.ToString());
                 }
 
+                //Get offset
+                JProperty? prop_offsetMilliseconds = spokenJSON.Property("offsetMilliseconds");
+                if (prop_offsetMilliseconds != null)
+                {
+                    ThisOne.OffsetMilliseconds = Convert.ToUInt32(prop_offsetMilliseconds.Value.ToString());
+                }
+
                 ToReturn.Add(ThisOne);
             }
 
