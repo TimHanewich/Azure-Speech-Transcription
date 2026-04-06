@@ -56,7 +56,7 @@ namespace AzureSpeechTranscription
                     string LineToWrite = "";
                     if (s.Speaker != null)
                     {
-                        LineToWrite = "Speaker " + s.Speaker.ToString() + " @ " + s.Confidence.ToString("#0%") + " confidence: " + s.Display;
+                        LineToWrite = "Speaker " + s.Speaker.ToString() + " at " + s.OffsetSeconds.ToString("#,##0") + " seconds (" + s.Confidence.ToString("#0%") + " confidence): " + s.Display;
                     }
                     else
                     {
