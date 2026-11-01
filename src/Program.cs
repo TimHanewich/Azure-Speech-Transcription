@@ -88,11 +88,14 @@ namespace AzureSpeechTranscription
         public static Spoken[] TranscriptionToSpokens(JObject transcription)
         {
             //Get recognized phrases
-            JToken? recognizedPhrasesToken = transcription.SelectToken("recognizedPhrases");
+            JToken? recognizedPhrasesToken = transcription.SelectToken("recognizedPhrases"); //if using batch transcription (slow)
             if (recognizedPhrasesToken == null)
             {
-                throw new Exception("Unable to find recognizedPhrases in transcription!");
-
+                recognizedPhrasesToken = transcription.SelectToken("phrases");   // if using fast transcription
+            }
+            if (recognizedPhrasesToken == null)
+            {
+                throw new Exception("Unable to find `recognizedPhrases` or `phrases` in transcription!");
             }
             JArray recognizedPhrases = (JArray)recognizedPhrasesToken;
 
@@ -109,18 +112,34 @@ namespace AzureSpeechTranscription
                     ThisOne.Speaker = Convert.ToInt32(prop_speaker.Value.ToString());
                 }
 
-                //get display
-                JToken? display = spokenJSON.SelectToken("nBest[0].display");
-                if (display != null)
+                //get the text itself
+                JToken? display = spokenJSON.SelectToken("nBest[0].display"); //for batch transcription (slow)
+                if (display != null) //if got it, it is batch transcription
                 {
                     ThisOne.Display = display.ToString();
                 }
+                else
+                {
+                    JToken? property_text = spokenJSON.SelectToken("text");
+                    if (property_text != null)
+                    {
+                        ThisOne.Display = property_text.ToString();
+                    }
+                }
 
                 //Get confidence
-                JToken? confidence = spokenJSON.SelectToken("nBest[0].confidence");
+                JToken? confidence = spokenJSON.SelectToken("nBest[0].confidence"); //batch transcription
                 if (confidence != null)
                 {
                     ThisOne.Confidence = Convert.ToSingle(confidence.ToString());
+                }
+                else //fast transcription
+                {
+                    JToken? property_confidence = spokenJSON.SelectToken("confidence");
+                    if (property_confidence != null)
+                    {
+                        ThisOne.Confidence = Convert.ToSingle(property_confidence.ToString());
+                    }
                 }
 
                 //Get offset
